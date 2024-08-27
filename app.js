@@ -9,6 +9,7 @@ const shopRoutes = require('./routes/shop');
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false })); // Parses body like we used to do manually in previous http version of this project
+app.use(express.static(path.join(__dirname, 'public'))); // Grant read access to the public folder statically
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
