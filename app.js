@@ -11,4 +11,8 @@ app.use(bodyParser.urlencoded({ extended: false })); // Parses body like we used
 app.use(adminRoutes);
 app.use(shopRoutes);
 
+app.use((req, res, next) => {
+  res.status(404).send('<h1>Page not found</h1>'); // Handling wrong routes entered by user
+});
+
 app.listen(3000);
