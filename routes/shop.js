@@ -9,7 +9,12 @@ const router = express.Router();
 
 router.get('/', (req, res, next) => {
   const products = adminData.products;
-  res.render('shop', { prods: products, pageTitle: 'Shop', path: '/shop' }); // Passing products to the template
+  res.render('shop', {
+    prods: products,
+    pageTitle: 'Shop',
+    path: '/shop',
+    hasProducts: products.length > 0,
+  }); // Passing products to the template
 });
 
 module.exports = router;
