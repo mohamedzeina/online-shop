@@ -9,7 +9,14 @@ const expressHbs = require('express-handlebars');
 
 const app = express();
 
-app.engine('hbs', expressHbs()); // Registering handlebars engine since it is not built in with express
+app.engine(
+  'hbs',
+  expressHbs({
+    layoutsDir: 'views/layouts/',
+    defaultLayout: 'main-layout',
+    extname: 'hbs',
+  })
+); // Registering handlebars engine since it is not built in with express
 app.set('view engine', 'hbs');
 app.set('views', 'views');
 

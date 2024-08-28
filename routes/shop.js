@@ -14,7 +14,9 @@ router.get('/', (req, res, next) => {
     pageTitle: 'Shop',
     path: '/shop',
     hasProducts: products.length > 0,
-  }); // Passing products to the template
+    activeShop: true,
+    productCSS: true,
+  }); // Passing options to the template
 });
 
 module.exports = router;
