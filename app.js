@@ -6,6 +6,8 @@ const bodyParser = require('body-parser');
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 
+const errorController = require('./controllers/error');
+
 const app = express();
 
 app.set('view engine', 'ejs');
@@ -17,8 +19,6 @@ app.use(express.static(path.join(__dirname, 'public'))); // Grant read access to
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 
-app.use((req, res, next) => {
-  res.status(404).render('404', { pageTitle: 'Page Not Found', path: '404' }); // Handling wrong routes entered by user
-});
+app.use(errorController.get404);
 
 app.listen(3000);
