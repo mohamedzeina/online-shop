@@ -15,10 +15,10 @@ exports.postAddProduct = (req, res, next) => {
 
 exports.getProducts = (req, res, next) => {
   Product.fetchAll((products) => {
-    res.render('shop/product-list', {
+    res.render('admin/products', {
       prods: products,
-      pageTitle: 'Shop',
-      path: '/shop',
-    }); // Passing options to the template
+      pageTitle: 'Admin Products',
+      path: '/admin/products',
+    });
   });
 };
