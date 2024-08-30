@@ -39,4 +39,11 @@ module.exports = class Product {
     // Static to call the fucntion directly without an instance
     getProductsFromFile(cb);
   }
+
+  static findById(id, cb) {
+    getProductsFromFile((products) => {
+      const product = products.find((p) => p.id === id);
+      cb(product);
+    });
+  }
 };
