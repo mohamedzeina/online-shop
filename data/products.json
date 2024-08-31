@@ -1,9 +1,1 @@
-[
-  {
-    "id": "12345",
-    "title": "A Book",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Open_book_nae_02.svg/1200px-Open_book_nae_02.svg.png",
-    "description": "This is an awesome book",
-    "price": "20"
-  }
-]
+[{"id":"12345","title":"A Book!!!","imageUrl":"https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Open_book_nae_02.svg/1200px-Open_book_nae_02.svg.png","description":"This is an awesome book","price":"21"}]
