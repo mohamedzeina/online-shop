@@ -7,11 +7,14 @@ const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 
 const errorController = require('./controllers/error');
+const db = require('./util/database');
 
 const app = express();
 
 app.set('view engine', 'ejs');
 app.set('views', 'views');
+
+db.execute('SELECT * FROM products').then(); // We get a promise from the db pool we created
 
 app.use(bodyParser.urlencoded({ extended: false })); // Parses body like we used to do manually in previous http version of this project
 app.use(express.static(path.join(__dirname, 'public'))); // Grant read access to the public folder statically
