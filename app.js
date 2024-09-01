@@ -14,7 +14,13 @@ const app = express();
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
-db.execute('SELECT * FROM products').then(); // We get a promise from the db pool we created
+db.execute('SELECT * FROM products')
+  .then((result) => {
+    console.log(result);
+  })
+  .catch((err) => {
+    console.log(err);
+  }); // We get a promise from the db pool we createdgit
 
 app.use(bodyParser.urlencoded({ extended: false })); // Parses body like we used to do manually in previous http version of this project
 app.use(express.static(path.join(__dirname, 'public'))); // Grant read access to the public folder statically
