@@ -3,7 +3,7 @@ const Cart = require('../models/cart');
 
 exports.getProducts = (req, res, next) => {
   Product.fetchAll()
-    .then(([rows, fieldData]) => {
+    .then(([rows]) => {
       res.render('shop/product-list', {
         prods: rows,
         pageTitle: 'All Products',
@@ -17,18 +17,22 @@ exports.getProducts = (req, res, next) => {
 
 exports.getProduct = (req, res, next) => {
   const prodId = req.params.productId; // Extracting dynamic parameter from path
-  Product.findById(prodId, (product) => {
-    res.render('shop/product-detail', {
-      pageTitle: product.title,
-      path: '/products',
-      product: product,
+  Product.findById(prodId)
+    .then(([product]) => {
+      res.render('shop/product-detail', {
+        pageTitle: product.title,
+        path: '/products',
+        product: product[0],
+      });
+    })
+    .catch((err) => {
+      console.log(err);
     });
-  });
 };
 
 exports.getIndex = (req, res, next) => {
   Product.fetchAll()
-    .then(([rows, fieldData]) => {
+    .then(([rows]) => {
       res.render('shop/index', {
         prods: rows,
         pageTitle: 'Shop',
