@@ -29,7 +29,11 @@ module.exports = class Cart {
       }
       cart.totalPrice = cart.totalPrice + +prodPrice;
       fs.writeFile(p, JSON.stringify(cart), (err) => {
-        console.log(err);
+        if (!err) {
+          console.log('Cart Saved Successfully');
+        } else {
+          console.log(err);
+        }
       });
     });
   }
@@ -48,7 +52,7 @@ module.exports = class Cart {
       updatedCart.totalPrice = updatedCart.totalPrice - prodPrice * productQty;
       fs.writeFile(p, JSON.stringify(updatedCart), (err) => {
         if (!err) {
-          console.log('Cart Written Successfully');
+          console.log('Cart Saved Successfully');
         } else {
           console.log(err);
         }
