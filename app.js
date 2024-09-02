@@ -19,6 +19,17 @@ app.set('views', 'views');
 app.use(bodyParser.urlencoded({ extended: false })); // Parses body like we used to do manually in previous http version of this project
 app.use(express.static(path.join(__dirname, 'public'))); // Grant read access to the public folder statically
 
+app.use((req, res, next) => {
+  User.findByPk(1)
+    .then((user) => {
+      req.user = user;
+      next();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}); // Storing dummy user to be able to use it anywhere in the app
+
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 
@@ -28,8 +39,21 @@ Product.belongsTo(User, { constraints: true, onDelete: 'CASCADE' }); // A user w
 // belongTo (one to many relationship)
 
 sequelize
-  .sync({ force: true })
-  .then((result) => {
+  .sync()
+  .then(() => {
+    return User.findByPk(1);
+  })
+  .then((user) => {
+    if (!user) {
+      return User.create({
+        name: 'Mohamed',
+        email: 'test@test.com',
+      });
+    }
+
+    return user;
+  })
+  .then(() => {
     app.listen(3000);
   })
   .catch((err) => {
