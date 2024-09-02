@@ -37,7 +37,7 @@ exports.getIndex = (req, res, next) => {
       res.render('shop/index', {
         prods: products,
         pageTitle: 'Shop',
-        path: '/shop',
+        path: '/',
       }); // Passing options to the template
     })
     .catch((err) => {
