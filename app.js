@@ -36,6 +36,7 @@ app.use(shopRoutes);
 app.use(errorController.get404);
 
 Product.belongsTo(User, { constraints: true, onDelete: 'CASCADE' }); // A user who created a product that gets deleted, product also gets deleted
+User.hasMany(Product);
 // belongTo (one to many relationship)
 
 sequelize
