@@ -10,6 +10,8 @@ const errorController = require('./controllers/error');
 const sequelize = require('./util/database');
 const Product = require('./models/product');
 const User = require('./models/user');
+const Cart = require('./models/cart');
+const CartItem = require('./models/cart-item');
 
 const app = express();
 
@@ -35,12 +37,24 @@ app.use(shopRoutes);
 
 app.use(errorController.get404);
 
+/* Associations
+1) A product is created by one user
+2) A user can create many products
+3) A user has one cart only
+4) A cart belongs to a user
+5) A Cart can have many products
+6) A product belongs to many carts
+*/
+
 Product.belongsTo(User, { constraints: true, onDelete: 'CASCADE' }); // A user who created a product that gets deleted, product also gets deleted
-User.hasMany(Product);
-// belongTo (one to many relationship)
+User.hasMany(Product); // belongTo (one to many relationship)
+User.hasOne(Cart);
+Cart.belongsTo(User);
+Cart.belongsToMany(Product, { through: CartItem });
+Product.belongsToMany(Cart, { through: CartItem });
 
 sequelize
-  .sync()
+  .sync({ force: true })
   .then(() => {
     return User.findByPk(1);
   })
