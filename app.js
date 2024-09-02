@@ -12,6 +12,8 @@ const Product = require('./models/product');
 const User = require('./models/user');
 const Cart = require('./models/cart');
 const CartItem = require('./models/cart-item');
+const Order = require('./models/order');
+const OrderItem = require('./models/order-item');
 
 const app = express();
 
@@ -44,6 +46,9 @@ app.use(errorController.get404);
 4) A cart belongs to a user
 5) A Cart can have many products
 6) A product belongs to many carts
+7) A order belongs to a user
+8) A user has many orders
+9) A order belongs to many products
 */
 
 Product.belongsTo(User, { constraints: true, onDelete: 'CASCADE' }); // A user who created a product that gets deleted, product also gets deleted
@@ -52,6 +57,9 @@ User.hasOne(Cart);
 Cart.belongsTo(User);
 Cart.belongsToMany(Product, { through: CartItem });
 Product.belongsToMany(Cart, { through: CartItem });
+Order.belongsTo(User);
+User.hasMany(Order);
+Order.belongsToMany(Product, { through: OrderItem });
 
 sequelize
   .sync()
