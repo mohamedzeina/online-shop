@@ -35,10 +35,12 @@ exports.getEditProduct = (req, res, next) => {
   if (!editMode) {
     return res.redirect('/');
   }
-
   const prodId = req.params.productId;
-  Product.findByPk(prodId)
-    .then((product) => {
+  req.user
+    .getProducts({ where: { id: prodId } })
+    // Product.findByPk(prodId)
+    .then((products) => {
+      const product = products[0];
       if (!product) {
         return res.redirect('/');
       }
@@ -68,7 +70,7 @@ exports.postEditProduct = (req, res, next) => {
       product.description = updatedDesc;
       return product.save();
     })
-    .then((result) => {
+    .then(() => {
       console.log('Updated Product Successfully');
       res.redirect('/admin/products');
     })
@@ -78,7 +80,8 @@ exports.postEditProduct = (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.findAll()
+  req.user
+    .getProducts()
     .then((products) => {
       res.render('admin/products', {
         prods: products,
@@ -97,7 +100,7 @@ exports.postDeleteProduct = (req, res, next) => {
     .then((product) => {
       return product.destroy();
     })
-    .then((result) => {
+    .then(() => {
       console.log('Deleted Product Successfully');
       res.redirect('/admin/products');
     })
