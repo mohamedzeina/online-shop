@@ -1,4 +1,4 @@
-const { where } = require('sequelize');
+const sequelize = require('sequelize');
 const Product = require('../models/product');
 
 exports.getAddProduct = (req, res, next) => {
