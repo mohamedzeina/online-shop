@@ -1,4 +1,5 @@
 const mongodb = require('mongodb');
+const { get } = require('../routes/admin');
 const getDb = require('../util/database').getDb;
 
 const ObjectId = mongodb.ObjectId;
@@ -75,6 +76,23 @@ class User {
       { _id: new ObjectId(this._id) },
       { $set: { cart: { items: updatedCartItems } } } // Updating the cart of the user
     );
+  }
+
+  addOrder() {
+    const db = getDb();
+    return db
+      .collection('orders')
+      .insertOne(this.cart)
+      .then(() => {
+        this.cart = { items: [] };
+        return db.collection('users').updateOne(
+          { _id: new ObjectId(this._id) },
+          { $set: { cart: { items: [] } } } // Updating the cart of the user
+        );
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
 
   static findById(userId) {
