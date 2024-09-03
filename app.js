@@ -21,7 +21,7 @@ app.use(express.static(path.join(__dirname, 'public'))); // Grant read access to
 app.use((req, res, next) => {
   User.findById('66d70f0e666e1fffe2d5dd9c')
     .then((user) => {
-      req.user = user;
+      req.user = new User(user.name, user.email, user.cart, user._id);
       next();
     })
     .catch((err) => {
