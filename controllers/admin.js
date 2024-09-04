@@ -81,6 +81,8 @@ exports.postEditProduct = (req, res, next) => {
 
 exports.getProducts = (req, res, next) => {
   Product.find()
+    // .select('title price -_id') // Used to select certain attributes you want to retreive
+    // .populate('userId') // Populate the userId with the user data automatically with the relation
     .then((products) => {
       res.render('admin/products', {
         prods: products,
