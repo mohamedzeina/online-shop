@@ -58,34 +58,13 @@ userSchema.methods.removeFromCart = function (productId) {
   this.cart.items = updatedCartItems;
   return this.save();
 };
+
+userSchema.methods.clearCart = function () {
+  this.cart = { items: [] };
+  return this.save();
+};
+
 module.exports = mongoose.model('User', userSchema);
-
-//   addOrder() {
-//     const db = getDb();
-//     return this.getCart()
-//       .then((products) => {
-//         const order = {
-//           items: products,
-//           user: {
-//             _id: new ObjectId(this._id),
-//             name: this.name,
-//             email: this.email,
-//           },
-//         };
-
-//         return db.collection('orders').insertOne(order);
-//       })
-//       .then(() => {
-//         this.cart = { items: [] };
-//         return db.collection('users').updateOne(
-//           { _id: new ObjectId(this._id) },
-//           { $set: { cart: { items: [] } } } // Updating the cart of the user
-//         );
-//       })
-//       .catch((err) => {
-//         console.log(err);
-//       });
-//   }
 
 //   getOrders() {
 //     const db = getDb();
