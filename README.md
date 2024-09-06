@@ -1,6 +1,6 @@
 # Online Shop
 
-This project is an **e-commerce platform** built using the **MVC architecture**. It allows users to browse and purchase products, while admins can manage products, users, and orders through an admin panel.
+This project is an **e-commerce platform** built using the **MVC architecture** with Node.js and Express.js. It allows users to browse and purchase products, while admins can manage products, users, and orders through an admin panel.
 
 ## Table of Contents
 
@@ -42,3 +42,11 @@ This project follows the **Model-View-Controller (MVC)** pattern:
    git clone https://github.com/mohamedzeina/online-shop.git
    cd online-shop
    ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm start
+   ```.
