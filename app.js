@@ -36,16 +36,19 @@ app.use(
   })
 ); // Session middleware initialized
 
-// app.use((req, res, next) => {
-//   User.findById('66d84edb1f636465313154a6')
-//     .then((user) => {
-//       req.user = user;
-//       next();
-//     })
-//     .catch((err) => {
-//       console.log(err);
-//     });
-// }); // Storing dummy user to be able to use it anywhere in the app
+app.use((req, res, next) => {
+  if (!req.session.user) {
+    return next();
+  }
+  User.findById(req.session.user._id)
+    .then((user) => {
+      req.user = user;
+      next();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}); // Storing dummy user from session in request to get full mongoose user object
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
