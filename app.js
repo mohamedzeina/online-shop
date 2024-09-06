@@ -36,16 +36,16 @@ app.use(
   })
 ); // Session middleware initialized
 
-app.use((req, res, next) => {
-  User.findById('66d84edb1f636465313154a6')
-    .then((user) => {
-      req.user = user;
-      next();
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-}); // Storing dummy user to be able to use it anywhere in the app
+// app.use((req, res, next) => {
+//   User.findById('66d84edb1f636465313154a6')
+//     .then((user) => {
+//       req.user = user;
+//       next();
+//     })
+//     .catch((err) => {
+//       console.log(err);
+//     });
+// }); // Storing dummy user to be able to use it anywhere in the app
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
