@@ -1,5 +1,5 @@
 exports.getLogin = (req, res, next) => {
-  const authCookie = req.get('Cookie').split(';')[2].trim().split('=')[1];
+  const authCookie = req.session.isLoggedIn;
   console.log(authCookie);
   res.render('auth/login', {
     path: '/login',
@@ -9,6 +9,6 @@ exports.getLogin = (req, res, next) => {
 };
 
 exports.postLogin = (req, res, next) => {
-  res.setHeader('Set-Cookie', 'loggedIn=true');
+  req.session.isLoggedIn = true;
   res.redirect('/');
 };

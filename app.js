@@ -3,6 +3,7 @@ const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const session = require('express-session');
 
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
@@ -18,6 +19,9 @@ app.set('views', 'views');
 
 app.use(bodyParser.urlencoded({ extended: false })); // Parses body like we used to do manually in previous http version of this project
 app.use(express.static(path.join(__dirname, 'public'))); // Grant read access to the public folder statically
+app.use(
+  session({ secret: 'my secret', resave: false, saveUninitialized: false })
+); // Session middleware initialized
 
 app.use((req, res, next) => {
   User.findById('66d84edb1f636465313154a6')
