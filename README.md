@@ -49,4 +49,4 @@ This project follows the **Model-View-Controller (MVC)** pattern:
 3. Start the development server:
    ```bash
    npm start
-   ```.
+   ```
