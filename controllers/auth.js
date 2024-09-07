@@ -3,12 +3,16 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 
 exports.getLogin = (req, res, next) => {
-  authCookie = req.session.isLoggedIn;
-  console.log();
+  let message = req.flash('loginError');
+  if (message.length > 0) {
+    message = message[0];
+  } else {
+    message = null;
+  }
   res.render('auth/login', {
     path: '/login',
     pageTitle: 'Login',
-    isAuthenticated: authCookie,
+    errorMessage: message,
   });
 };
 
@@ -18,6 +22,7 @@ exports.postLogin = (req, res, next) => {
   User.findOne({ email: email })
     .then((user) => {
       if (!user) {
+        req.flash('loginError', 'Invalid email or password.');
         console.log('User Not Found');
         return res.redirect('/login');
       }
@@ -53,7 +58,6 @@ exports.getSignup = (req, res, next) => {
   res.render('auth/signup', {
     path: '/signup',
     pageTitle: 'Signup',
-    isAuthenticated: false,
   });
 };
 

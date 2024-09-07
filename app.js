@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const mongoDBStore = require('connect-mongodb-session')(session);
 const csrf = require('csurf');
+const flash = require('connect-flash');
 
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
@@ -40,6 +41,7 @@ app.use(
 ); // Session middleware initialized
 
 app.use(csrfProtection); // CSRF middleware
+app.use(flash());
 
 app.use((req, res, next) => {
   if (!req.session.user) {
@@ -57,7 +59,7 @@ app.use((req, res, next) => {
 
 app.use((req, res, next) => {
   res.locals.isAuthenticated = req.session.isLoggedIn;
-  res.locals.csrfToken = req.csrfToken();
+  res.locals.csrfToken = req.csrfToken(); // Provided by CSRF middleware we added
   next();
 }); // Every request that is executed will have these fields for the views that are rendered
 
