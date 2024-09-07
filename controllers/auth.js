@@ -41,7 +41,7 @@ exports.postLogin = (req, res, next) => {
               res.redirect('/'); // Only redirect once session is saved to the db
             });
           }
-          console.log('Incorrect Password Entered');
+          req.flash('loginError', 'Invalid email or password.');
           res.redirect('/login');
         })
         .catch((err) => {
@@ -55,9 +55,16 @@ exports.postLogin = (req, res, next) => {
 };
 
 exports.getSignup = (req, res, next) => {
+  let message = req.flash('signUpError');
+  if (message.length > 0) {
+    message = message[0];
+  } else {
+    message = null;
+  }
   res.render('auth/signup', {
     path: '/signup',
     pageTitle: 'Signup',
+    errorMessage: message,
   });
 };
 
@@ -69,11 +76,15 @@ exports.postSignup = (req, res, next) => {
   User.findOne({ email: email })
     .then((userDoc) => {
       if (userDoc) {
-        console.log('Email Already Taken');
+        req.flash(
+          'signUpError',
+          'E-Mail exists already, please pick a different one.'
+        );
         return res.redirect('/signup');
       }
+      console.log(password);
       return bcrypt
-        .hash(password)
+        .hash(password, 12)
         .then((hashedPass) => {
           const user = new User({
             email: email,
