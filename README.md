@@ -23,7 +23,8 @@ This project is an **e-commerce platform** built using the **MVC architecture** 
 - **Backend:** Node.js, Express.js
 - **Frontend:** EJS (Embedded JavaScript) templating engine
 - **Database:** MongoDB with Mongoose
-- **Authentication:**
+- **Authentication:** Express-sessions (with connect-mongodb-session for session storage) for session management, bcryptjs for password encryption
+- **Security:** csurf for CSRF protection
 - **Payment Gateway:**
 
 
