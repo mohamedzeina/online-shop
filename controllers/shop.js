@@ -20,7 +20,6 @@ exports.getProduct = (req, res, next) => {
   const prodId = req.params.productId; // Extracting dynamic parameter from path
   Product.findById(prodId)
     .then((product) => {
-      console.log(product);
       res.render('shop/product-detail', {
         pageTitle: product.title,
         path: '/products',
@@ -41,6 +40,7 @@ exports.getIndex = (req, res, next) => {
         pageTitle: 'Shop',
         path: '/',
         isAuthenticated: req.session.isLoggedIn,
+        csrfToken: req.csrfToken(), // Provided by CSRF middleware we added
       }); // Passing options to the template
     })
     .catch((err) => {

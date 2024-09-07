@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const mongoDBStore = require('connect-mongodb-session')(session);
+const csrf = require('csurf');
 
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
@@ -22,6 +23,8 @@ const store = mongoDBStore({
   collection: 'sessions',
 });
 
+const csrfProtection = csrf();
+
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
@@ -35,6 +38,7 @@ app.use(
     store: store,
   })
 ); // Session middleware initialized
+app.use(csrfProtection); // CSRF middleware
 
 app.use((req, res, next) => {
   if (!req.session.user) {
