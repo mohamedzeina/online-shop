@@ -54,6 +54,12 @@ app.use((req, res, next) => {
     });
 }); // Storing dummy user from session in request to get full mongoose user object
 
+app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.session.isLoggedIn;
+  res.locals.csrfToken = req.csrfToken();
+  next();
+}); // Every request that is executed will have these fields for the views that are rendered
+
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
