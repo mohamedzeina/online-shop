@@ -38,6 +38,7 @@ app.use(
     store: store,
   })
 ); // Session middleware initialized
+
 app.use(csrfProtection); // CSRF middleware
 
 app.use((req, res, next) => {
