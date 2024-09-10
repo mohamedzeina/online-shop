@@ -13,9 +13,15 @@ router.get('/add-product', isAuth, adminController.getAddProduct);
 router.post(
   '/add-product',
   [
-    body('title').isString().isLength({ min: 3 }).trim(),
-    body('imageUrl').isURL(),
-    body('price').isFloat(),
+    body(
+      'title',
+      'Title has to be a string that is at least 3 characters long.'
+    )
+      .isString()
+      .isLength({ min: 3 })
+      .trim(),
+    body('imageUrl', 'Please enter a valid image URL.').isURL(),
+    body('price', 'Please enter a valid price.').isFloat(),
     body('description').isLength({ min: 5, max: 400 }).trim(),
   ],
   isAuth,
@@ -30,10 +36,21 @@ router.get('/edit-product/:productId', isAuth, adminController.getEditProduct);
 router.post(
   '/edit-product',
   [
-    body('title').isAlphanumeric().isLength({ min: 3 }).trim(),
-    body('imageUrl').isURL(),
-    body('price').isFloat(),
-    body('description').isLength({ min: 5, max: 400 }).trim(),
+    body(
+      'title',
+      'Title has to be a string that is at least 3 characters long.'
+    )
+      .isString()
+      .isLength({ min: 3 })
+      .trim(),
+    body('imageUrl', 'Please enter a valid image URL.').isURL(),
+    body('price', 'Please enter a valid price.').isFloat(),
+    body(
+      'description',
+      'Description has to be a string that is between 5 and 400 characters long.'
+    )
+      .isLength({ min: 5, max: 400 })
+      .trim(),
   ],
   isAuth,
   adminController.postEditProduct
