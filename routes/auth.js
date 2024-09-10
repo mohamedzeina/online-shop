@@ -11,11 +11,16 @@ router.get('/login', authController.getLogin);
 router.post(
   '/login',
   [
-    body('email').isEmail().withMessage('Please enter a valid email.'),
+    body('email')
+      .isEmail()
+      .withMessage('Please enter a valid email.')
+      .normalizeEmail(),
     body(
       'password',
       'Please enter a password that is at least 6 characters long.'
-    ).isLength({ min: 6 }),
+    )
+      .isLength({ min: 6 })
+      .trim(),
   ],
   authController.postLogin
 );
@@ -36,17 +41,22 @@ router.post(
             );
           }
         });
-      }),
+      })
+      .normalizeEmail(),
     body(
       'password',
       'Please enter a password that is at least 6 characters long.'
-    ).isLength({ min: 6 }),
-    body('confirmPassword').custom((value, { req }) => {
-      if (value !== req.body.password) {
-        throw new Error('Passwords have to match!');
-      }
-      return true;
-    }),
+    )
+      .isLength({ min: 6 })
+      .trim(),
+    body('confirmPassword')
+      .custom((value, { req }) => {
+        if (value !== req.body.password) {
+          throw new Error('Passwords have to match!');
+        }
+        return true;
+      })
+      .trim(),
   ],
   authController.postSignup
 );
