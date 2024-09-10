@@ -29,10 +29,18 @@ exports.getLogin = (req, res, next) => {
     path: '/login',
     pageTitle: 'Login',
     errorMessage: message,
+    oldInput: {
+      email: '',
+      password: '',
+    },
+    validationErrors: [],
   });
 };
 
 exports.postLogin = (req, res, next) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
   const errors = validationResult(req);
   console.log(errors);
   if (!errors.isEmpty()) {
@@ -40,17 +48,27 @@ exports.postLogin = (req, res, next) => {
       path: '/login',
       pageTitle: 'Login',
       errorMessage: errors.array()[0].msg,
+      oldInput: {
+        email: email,
+        password: password,
+      },
+      validationErrors: errors.array(),
     });
   }
 
-  const email = req.body.email;
-  const password = req.body.password;
   User.findOne({ email: email })
     .then((user) => {
       if (!user) {
-        req.flash('loginError', 'Invalid email or password.');
-        console.log('User Not Found');
-        return res.redirect('/login');
+        return res.status(422).render('auth/login', {
+          path: '/login',
+          pageTitle: 'Login',
+          errorMessage: 'Invalid email or password.',
+          oldInput: {
+            email: email,
+            password: password,
+          },
+          validationErrors: [],
+        });
       }
       bcrypt
         .compare(password, user.password)
@@ -67,8 +85,16 @@ exports.postLogin = (req, res, next) => {
               res.redirect('/'); // Only redirect once session is saved to the db
             });
           }
-          req.flash('loginError', 'Invalid email or password.');
-          res.redirect('/login');
+          return res.status(422).render('auth/login', {
+            path: '/login',
+            pageTitle: 'Login',
+            errorMessage: 'Invalid email or password.',
+            oldInput: {
+              email: email,
+              password: password,
+            },
+            validationErrors: [],
+          });
         })
         .catch((err) => {
           console.log(err);
