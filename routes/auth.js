@@ -1,5 +1,5 @@
 const express = require('express');
-const { check, body } = require('express-validator');
+const { body } = require('express-validator');
 
 const authController = require('../controllers/auth');
 const User = require('../models/user');
@@ -30,7 +30,7 @@ router.get('/signup', authController.getSignup);
 router.post(
   '/signup',
   [
-    check('email')
+    body('email')
       .isEmail()
       .withMessage('Please enter a valid email.')
       .custom((value, { req }) => {
