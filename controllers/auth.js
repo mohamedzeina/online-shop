@@ -92,6 +92,7 @@ exports.getSignup = (req, res, next) => {
     pageTitle: 'Signup',
     errorMessage: message,
     oldInput: { email: '', password: '', confirmPassword: '' },
+    validationErrors: [],
   });
 };
 
@@ -110,6 +111,7 @@ exports.postSignup = (req, res, next) => {
         password: password,
         confirmPassword: req.body.confirmPassword,
       },
+      validationErrors: errors.array(),
     });
   }
 
