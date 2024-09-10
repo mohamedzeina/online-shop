@@ -8,7 +8,17 @@ const router = express.Router();
 
 router.get('/login', authController.getLogin);
 
-router.post('/login', authController.postLogin);
+router.post(
+  '/login',
+  [
+    body('email').isEmail().withMessage('Please enter a valid email.'),
+    body(
+      'password',
+      'Please enter a password that is at least 6 characters long.'
+    ).isLength({ min: 6 }),
+  ],
+  authController.postLogin
+);
 
 router.get('/signup', authController.getSignup);
 
