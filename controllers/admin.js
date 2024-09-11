@@ -183,7 +183,7 @@ exports.postDeleteProduct = (req, res, next) => {
       }
       console.log(product);
       console.log(prodId);
-      fileHelper.deleteFile(product.imageUrl);
+      //fileHelper.deleteFile(product.imageUrl);
       return Product.deleteOne({ _id: prodId, userId: req.user._id });
     })
     .then(() => {
