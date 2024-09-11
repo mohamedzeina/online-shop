@@ -177,11 +177,31 @@ exports.getInvoice = (req, res, next) => {
       pdfDoc.pipe(fs.createWriteStream(invoicePath));
       pdfDoc.pipe(res);
 
-      pdfDoc.text('Hello World!');
+      pdfDoc.fontSize(26).text('Order #' + orderId, {
+        underline: true,
+      });
+      pdfDoc.text('---------------');
+      let totalPrice = 0;
+      order.products.forEach((prod) => {
+        totalPrice = totalPrice + prod.quantity * prod.productData.price;
+        pdfDoc
+          .fontSize(14)
+          .text(
+            prod.productData.title +
+              ' - ' +
+              prod.quantity +
+              ' x ' +
+              '$' +
+              prod.productData.price
+          );
+      });
+      pdfDoc.fontSize(26).text('---------------');
+      pdfDoc.fontSize(20).text('Total Price: $' + totalPrice);
 
       pdfDoc.end();
     })
     .catch((err) => {
+      console.log(err);
       next(err);
     });
 };
