@@ -7,6 +7,7 @@ const session = require('express-session');
 const mongoDBStore = require('connect-mongodb-session')(session);
 const csrf = require('csurf');
 const flash = require('connect-flash');
+const multer = require('multer');
 
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
@@ -29,6 +30,8 @@ app.set('view engine', 'ejs');
 app.set('views', 'views');
 
 app.use(bodyParser.urlencoded({ extended: false })); // Parses body like we used to do manually in previous http version of this project
+app.use(multer({ dest: 'images' }).single('image')); // Using multer to handle image uploads by an admin
+
 app.use(express.static(path.join(__dirname, 'public'))); // Grant read access to the public folder statically
 app.use(
   session({
