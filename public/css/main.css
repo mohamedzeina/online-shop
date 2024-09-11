@@ -242,6 +242,10 @@ form {
   text-align: center;
 }
 
+.error {
+  margin: 0rem 2rem;
+}
+
 .user-message--error {
   border-color: red;
   background: rgb(255, 176, 176);

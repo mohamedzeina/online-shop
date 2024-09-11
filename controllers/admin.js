@@ -128,13 +128,15 @@ exports.postEditProduct = (req, res, next) => {
         res.redirect('/admin/products');
       });
     })
-
     .catch((err) => {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
 
 exports.getProducts = (req, res, next) => {
+  throw new Error('dummy');
   Product.find({ userId: req.user._id })
     // .select('title price -_id') // Used to select certain attributes you want to retreive
     // .populate('userId') // Populate the userId with the user data automatically with the relation
@@ -146,7 +148,9 @@ exports.getProducts = (req, res, next) => {
       });
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
 
@@ -158,6 +162,8 @@ exports.postDeleteProduct = (req, res, next) => {
       res.redirect('/admin/products');
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };

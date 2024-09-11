@@ -55,7 +55,7 @@ app.use((req, res, next) => {
       next();
     })
     .catch((err) => {
-      throw new Error(err);
+      next(new Error(err));
     });
 }); // Storing dummy user from session in request to get full mongoose user object
 
