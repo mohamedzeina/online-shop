@@ -136,7 +136,6 @@ exports.postEditProduct = (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
-  throw new Error('dummy');
   Product.find({ userId: req.user._id })
     // .select('title price -_id') // Used to select certain attributes you want to retreive
     // .populate('userId') // Populate the userId with the user data automatically with the relation
