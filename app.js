@@ -18,6 +18,15 @@ const User = require('./models/user');
 
 dotenv.config();
 
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'images');
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toDateString() + '-' + file.originalname);
+  },
+});
+
 const app = express();
 const store = mongoDBStore({
   uri: process.env.MONGODB_URI,
@@ -30,7 +39,7 @@ app.set('view engine', 'ejs');
 app.set('views', 'views');
 
 app.use(bodyParser.urlencoded({ extended: false })); // Parses body like we used to do manually in previous http version of this project
-app.use(multer({ dest: 'images' }).single('image')); // Using multer to handle image uploads by an admin
+app.use(multer({ storage: fileStorage }).single('image')); // Using multer to handle image uploads by an admin
 
 app.use(express.static(path.join(__dirname, 'public'))); // Grant read access to the public folder statically
 app.use(
