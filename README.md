@@ -49,13 +49,13 @@ This project follows the **Model-View-Controller (MVC)** pattern:
    ```
 
 3. Set up your environment variables in a .env file:
-```makefile
-MONGODB_URI=<your-mongodb-uri>
-NODEMAILER_API_KEY=<your-nodemailer-api-key>
-FROM_EMAIL=<email-used-for-nodemailer>
-STRIPE_PUB_KEY=<your-stripe-publishable-key>
-STRIPE_SECRET_KEY=<your-stripe-secret>
-```
+   ```makefile
+   MONGODB_URI=<your-mongodb-uri>
+   NODEMAILER_API_KEY=<your-nodemailer-api-key>
+   FROM_EMAIL=<email-used-for-nodemailer>
+   STRIPE_PUB_KEY=<your-stripe-publishable-key>
+   STRIPE_SECRET_KEY=<your-stripe-secret>
+   ```
 4. Start the development server:
    ```bash
    npm start
