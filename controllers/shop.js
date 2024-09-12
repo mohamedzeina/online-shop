@@ -5,39 +5,18 @@ const PDFDocument = require('pdfkit');
 
 const Product = require('../models/product');
 const Order = require('../models/order');
-
-const ITEMS_PER_PAGE = 1;
+const pg = require('../util/paginationHelper');
 
 exports.getProducts = (req, res, next) => {
-  const page = +req.query.page || 1;
-  let totalItems;
-
-  Product.find()
-    .countDocuments()
-    .then((numProds) => {
-      totalItems = numProds;
-      return Product.find()
-        .skip((page - 1) * ITEMS_PER_PAGE) // Skips amount of products
-        .limit(ITEMS_PER_PAGE); // Limits the amount of data you get
-    })
-    .then((products) => {
-      res.render('shop/product-list', {
-        prods: products,
-        pageTitle: 'All Products',
-        path: '/products',
-        currentPage: page,
-        hasNextPage: ITEMS_PER_PAGE * page < totalItems,
-        hasPrevPage: page > 1,
-        nextPage: page + 1,
-        prevPage: page - 1,
-        lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
-      }); // Passing options to the template
-    })
-    .catch((err) => {
-      const error = new Error(err);
-      error.httpStatusCode = 500;
-      return next(error);
-    });
+  pg.paginationHelper(
+    req,
+    res,
+    next,
+    'shop/product-list',
+    'All Products',
+    '/products',
+    {}
+  );
 };
 
 exports.getProduct = (req, res, next) => {
@@ -58,35 +37,7 @@ exports.getProduct = (req, res, next) => {
 };
 
 exports.getIndex = (req, res, next) => {
-  const page = +req.query.page || 1;
-  let totalItems;
-
-  Product.find()
-    .countDocuments()
-    .then((numProds) => {
-      totalItems = numProds;
-      return Product.find()
-        .skip((page - 1) * ITEMS_PER_PAGE) // Skips amount of products
-        .limit(ITEMS_PER_PAGE); // Limits the amount of data you get
-    })
-    .then((products) => {
-      res.render('shop/index', {
-        prods: products,
-        pageTitle: 'Shop',
-        path: '/',
-        currentPage: page,
-        hasNextPage: ITEMS_PER_PAGE * page < totalItems,
-        hasPrevPage: page > 1,
-        nextPage: page + 1,
-        prevPage: page - 1,
-        lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
-      }); // Passing options to the template
-    })
-    .catch((err) => {
-      const error = new Error(err);
-      error.httpStatusCode = 500;
-      return next(error);
-    });
+  pg.paginationHelper(req, res, next, 'shop/index', 'Shop', '/', {});
 };
 
 exports.getCart = (req, res, next) => {

@@ -2,6 +2,7 @@ const { validationResult } = require('express-validator');
 
 const Product = require('../models/product');
 const fileHelper = require('../util/file');
+const pg = require('../util/paginationHelper');
 
 exports.getAddProduct = (req, res, next) => {
   res.render('admin/edit-product', {
@@ -157,21 +158,30 @@ exports.postEditProduct = (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.find({ userId: req.user._id })
-    // .select('title price -_id') // Used to select certain attributes you want to retreive
-    // .populate('userId') // Populate the userId with the user data automatically with the relation
-    .then((products) => {
-      res.render('admin/products', {
-        prods: products,
-        pageTitle: 'Admin Products',
-        path: '/admin/products',
-      });
-    })
-    .catch((err) => {
-      const error = new Error(err);
-      error.httpStatusCode = 500;
-      return next(error);
-    });
+  pg.paginationHelper(
+    req,
+    res,
+    next,
+    'admin/products',
+    'Admin Products',
+    '/admin/products',
+    { userId: req.user._id }
+  );
+  // Product.find()
+  //   // .select('title price -_id') // Used to select certain attributes you want to retreive
+  //   // .populate('userId') // Populate the userId with the user data automatically with the relation
+  //   .then((products) => {
+  //     res.render(, {
+  //       prods: products,
+  //       pageTitle: ,
+  //       path: ,
+  //     });
+  //   })
+  //   .catch((err) => {
+  //     const error = new Error(err);
+  //     error.httpStatusCode = 500;
+  //     return next(error);
+  //   });
 };
 
 exports.postDeleteProduct = (req, res, next) => {
