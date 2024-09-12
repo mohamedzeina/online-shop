@@ -167,43 +167,24 @@ exports.getProducts = (req, res, next) => {
     '/admin/products',
     { userId: req.user._id }
   );
-  // Product.find()
-  //   // .select('title price -_id') // Used to select certain attributes you want to retreive
-  //   // .populate('userId') // Populate the userId with the user data automatically with the relation
-  //   .then((products) => {
-  //     res.render(, {
-  //       prods: products,
-  //       pageTitle: ,
-  //       path: ,
-  //     });
-  //   })
-  //   .catch((err) => {
-  //     const error = new Error(err);
-  //     error.httpStatusCode = 500;
-  //     return next(error);
-  //   });
 };
 
-exports.postDeleteProduct = (req, res, next) => {
-  const prodId = req.body.productId;
+exports.deleteProduct = (req, res, next) => {
+  const prodId = req.params.prodId;
   Product.findById(prodId)
     .then((product) => {
       if (!product) {
         return new Error('Product not found.');
       }
-      console.log(product);
-      console.log(prodId);
-      //fileHelper.deleteFile(product.imageUrl);
+
+      fileHelper.deleteFile(product.imageUrl);
       return Product.deleteOne({ _id: prodId, userId: req.user._id });
     })
     .then(() => {
       console.log('Deleted Product Successfully');
-      res.redirect('/admin/products');
+      res.status(200).json({ message: 'Deleting product succeeded.' });
     })
     .catch((err) => {
-      console.log(err);
-      const error = new Error(err);
-      error.httpStatusCode = 500;
-      return next(error);
+      res.status(500).json({ message: 'Deleting product failed.' });
     });
 };
