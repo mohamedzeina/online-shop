@@ -16,8 +16,6 @@ const authRoutes = require('./routes/auth');
 const errorController = require('./controllers/error');
 const User = require('./models/user');
 
-dotenv.config();
-
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'images');
@@ -26,6 +24,8 @@ const fileStorage = multer.diskStorage({
     cb(null, new Date().toDateString() + '-' + file.originalname);
   },
 });
+
+dotenv.config();
 
 const fileFilter = (req, file, cb) => {
   if (
