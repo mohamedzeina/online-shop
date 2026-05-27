@@ -41,6 +41,8 @@ const SHOTS = [
   { name: 'homepage',         url: '/',                          label: 'Homepage with hero and paginated catalog' },
   { name: 'category',         url: '/category/electronics',      label: 'Category browse with chip filters and sort' },
   { name: 'product-detail',   url: '__FIRST_PRODUCT__',          label: 'Product detail with 3D viewer toggle and reviews' },
+  { name: 'product-detail-3d', url: '__FIRST_3D_PRODUCT__',      label: 'Three.js GLB viewer with auto-rotate and orbit controls',
+    async setup(page) { await activate3DView(page); } },
   { name: 'search',           url: '/search?q=lamp',             label: 'Full-text search results' },
   { name: 'login',            url: '/login',                     label: 'Customer sign-in' },
   { name: 'signup',           url: '/signup',                    label: 'Customer registration with avatar upload' },
@@ -101,16 +103,53 @@ async function firstHref(page, selector) {
   }, selector);
 }
 
+async function allHrefs(page, selector) {
+  return page.evaluate((sel) => {
+    return Array.from(document.querySelectorAll(sel)).map((a) => a.getAttribute('href'));
+  }, selector);
+}
+
 async function resolveSpecialUrl(page, raw) {
   if (raw === '__FIRST_PRODUCT__') {
     await page.goto(BASE_URL + '/', { waitUntil: 'networkidle2' });
     return (await firstHref(page, 'a[href^="/products/"]')) || '/';
+  }
+  if (raw === '__FIRST_3D_PRODUCT__') {
+    await page.goto(BASE_URL + '/', { waitUntil: 'networkidle2' });
+    const hrefs = await allHrefs(page, 'a[href^="/products/"]');
+    const seen = new Set();
+    for (const href of hrefs) {
+      if (!href || seen.has(href)) continue;
+      seen.add(href);
+      await page.goto(BASE_URL + href, { waitUntil: 'networkidle2' });
+      const has3D = await page.evaluate(
+        () => !!document.querySelector('.view-toggle__btn[data-view="3d"]'),
+      );
+      if (has3D) return href;
+    }
+    return hrefs[0] || '/';
   }
   if (raw === '__FIRST_ORDER__') {
     await page.goto(BASE_URL + '/orders', { waitUntil: 'networkidle2' });
     return (await firstHref(page, 'a[href^="/orders/"]')) || '/orders';
   }
   return raw;
+}
+
+async function activate3DView(page) {
+  const toggle = await page.$('.view-toggle__btn[data-view="3d"]');
+  if (!toggle) return; // product has no model; leave the photo view
+  await toggle.click();
+  // Wait for the loader to disappear (viewer-hint appears once the model loads)
+  await page.waitForSelector('.viewer-hint, .viewer-loading[style*="display: none"]', { timeout: 15000 })
+    .catch(() => {});
+  // Dismiss the "drag to rotate" hint so it doesn't sit over the model
+  await page.evaluate(() => {
+    const hint = document.querySelector('.viewer-hint');
+    if (hint) hint.classList.add('viewer-hint--gone');
+  });
+  // Give the model a moment to settle into its idle rotation
+  await sleep(1500);
 }
 
 async function capture(shot, sessions) {
