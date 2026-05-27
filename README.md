@@ -405,7 +405,7 @@ The app listens on the port reported in the console (typically 3000).
 | `npm run test:watch` | Runs Jest in watch mode |
 | `npm run build:viewer` | esbuild bundles `public/js/product-detail-src.js` → `public/js/product-detail.js` (ESM, browser-target) for the 3D viewer |
 | `npm run seed` | Runs the database seeding script in `scripts/` |
-| `npm run snapshot` | Uses Puppeteer to capture screenshots of every major page into `docs/screenshots/`, then injects the gallery into this README between the `snapshots:start/end` markers |
+| `npm run snapshot` | Uses Puppeteer to capture screenshots of every major page into `docs/screenshots/`, then injects the gallery into this README between the `snapshots:start/end` markers. Requires `ffmpeg` on `PATH` for the animated 3D-viewer GIF (`brew install ffmpeg` on macOS); PNG-only shots work without it. |
 
 ---
 
