@@ -19,7 +19,9 @@
 // Output: PNG files in SNAPSHOT_OUT plus a Markdown manifest (INDEX.md).
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
+const { execFileSync } = require('child_process');
 const puppeteer = require('puppeteer');
 
 const BASE_URL = (process.env.SNAPSHOT_BASE_URL || 'https://localhost:3000').replace(/\/$/, '');
@@ -42,6 +44,7 @@ const SHOTS = [
   { name: 'category',         url: '/category/electronics',      label: 'Category browse with chip filters and sort' },
   { name: 'product-detail',   url: '__FIRST_PRODUCT__',          label: 'Product detail with 3D viewer toggle and reviews' },
   { name: 'product-detail-3d', url: '__FIRST_3D_PRODUCT__',      label: 'Three.js GLB viewer with auto-rotate and orbit controls',
+    gif: { fps: 10, duration: 4, width: 560, clipSelector: '.product-detail__image' },
     async setup(page) { await activate3DView(page); } },
   { name: 'search',           url: '/search?q=lamp',             label: 'Full-text search results' },
   { name: 'login',            url: '/login',                     label: 'Customer sign-in' },
@@ -169,8 +172,15 @@ async function capture(shot, sessions) {
     // Let staggered fade-up animations settle
     await sleep(700);
 
-    const outPath = path.join(OUT_DIR, `${shot.name}.png`);
-    await page.screenshot({ path: outPath, fullPage: FULL });
+    const ext = shot.gif ? 'gif' : 'png';
+    const outPath = path.join(OUT_DIR, `${shot.name}.${ext}`);
+
+    if (shot.gif) {
+      await captureGif(page, outPath, shot.gif);
+    } else {
+      await page.screenshot({ path: outPath, fullPage: FULL });
+    }
+
     const status = resp ? resp.status() : '?';
     console.log(`  ✓ ${shot.name.padEnd(20)} → ${outPath}  (${status})`);
     return true;
@@ -179,6 +189,59 @@ async function capture(shot, sessions) {
     return false;
   } finally {
     await page.close();
+  }
+}
+
+async function captureGif(page, outPath, opts) {
+  const { fps = 12, duration = 4, width = 720, clipSelector } = opts;
+  const totalFrames = Math.round(fps * duration);
+  const frameInterval = 1000 / fps;
+
+  // Resolve the clip rect from a selector (in CSS pixels — deviceScaleFactor handled by puppeteer)
+  let clip = null;
+  if (clipSelector) {
+    clip = await page.evaluate((sel) => {
+      const el = document.querySelector(sel);
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { x: Math.round(r.x), y: Math.round(r.y), width: Math.round(r.width), height: Math.round(r.height) };
+    }, clipSelector);
+    if (clip && (clip.width === 0 || clip.height === 0)) clip = null;
+  }
+
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'snapshot-frames-'));
+  try {
+    const start = Date.now();
+    for (let i = 0; i < totalFrames; i++) {
+      const target = start + i * frameInterval;
+      const framePath = path.join(tmpDir, `frame-${String(i).padStart(4, '0')}.png`);
+      await page.screenshot({ path: framePath, ...(clip ? { clip } : {}) });
+      const wait = target + frameInterval - Date.now();
+      if (wait > 0) await sleep(wait);
+    }
+
+    // Two-pass ffmpeg: generate palette → encode with palette for crisp colors
+    const palettePath = path.join(tmpDir, 'palette.png');
+    const framePattern = path.join(tmpDir, 'frame-%04d.png');
+    const scale = `scale=${width}:-1:flags=lanczos`;
+    execFileSync('ffmpeg', [
+      '-y', '-loglevel', 'error',
+      '-framerate', String(fps),
+      '-i', framePattern,
+      '-vf', `${scale},palettegen=stats_mode=full`,
+      palettePath,
+    ]);
+    execFileSync('ffmpeg', [
+      '-y', '-loglevel', 'error',
+      '-framerate', String(fps),
+      '-i', framePattern,
+      '-i', palettePath,
+      '-lavfi', `${scale}[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=5`,
+      '-loop', '0',
+      outPath,
+    ]);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
   }
 }
 
@@ -201,7 +264,8 @@ async function buildSession(browser, role) {
 function buildGallery(captured) {
   const lines = [];
   for (const s of captured) {
-    const rel = path.join(OUT_DIR, `${s.name}.png`).replace(/\\/g, '/');
+    const ext = s.gif ? 'gif' : 'png';
+    const rel = path.join(OUT_DIR, `${s.name}.${ext}`).replace(/\\/g, '/');
     lines.push(`### ${s.label}`);
     lines.push('');
     lines.push(`![${s.label}](${rel})`);
