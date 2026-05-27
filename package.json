@@ -10,7 +10,8 @@
     "start": "node app.js",
     "dev": "nodemon app.js",
     "build:viewer": "esbuild public/js/product-detail-src.js --bundle --format=esm --outfile=public/js/product-detail.js",
-    "seed": "node scripts/seed.js"
+    "seed": "node scripts/seed.js",
+    "snapshot": "node scripts/snapshot.js"
   },
   "author": "Mohamed Zeina",
   "license": "ISC",
