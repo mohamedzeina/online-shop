@@ -33979,6 +33979,10 @@ function initViewer() {
   controls.autoRotate = true;
   controls.autoRotateSpeed = 1.5;
   controls.enablePan = false;
+  if (new URLSearchParams(window.location.search).has("__snapshot")) {
+    controls.enableDamping = false;
+    controls.autoRotateSpeed = 7.5;
+  }
   const dracoLoader = new DRACOLoader();
   dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/");
   const loader = new GLTFLoader();

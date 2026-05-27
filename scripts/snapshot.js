@@ -44,7 +44,7 @@ const SHOTS = [
   { name: 'category',         url: '/category/electronics',      label: 'Category browse with chip filters and sort' },
   { name: 'product-detail',   url: '__FIRST_PRODUCT__',          label: 'Product detail with 3D viewer toggle and reviews' },
   { name: 'product-detail-3d', url: '__FIRST_3D_PRODUCT__',      label: 'Three.js GLB viewer with auto-rotate and orbit controls',
-    gif: { fps: 10, duration: 4, width: 560, clipSelector: '.product-detail__image' },
+    gif: { fps: 12, duration: 4, width: 560, clipSelector: '.product-detail__image' },
     async setup(page) { await activate3DView(page); } },
   { name: 'search',           url: '/search?q=lamp',             label: 'Full-text search results' },
   { name: 'login',            url: '/login',                     label: 'Customer sign-in' },
@@ -128,7 +128,8 @@ async function resolveSpecialUrl(page, raw) {
       const has3D = await page.evaluate(
         () => !!document.querySelector('.view-toggle__btn[data-view="3d"]'),
       );
-      if (has3D) return href;
+      // Append __snapshot flag so the viewer spins quickly without damping
+      if (has3D) return href + (href.includes('?') ? '&' : '?') + '__snapshot=1';
     }
     return hrefs[0] || '/';
   }

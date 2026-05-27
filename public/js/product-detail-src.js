@@ -53,6 +53,12 @@ function initViewer() {
   controls.autoRotateSpeed = 1.5;
   controls.enablePan = false;
 
+  // Snapshot mode: skip damping and aim for one orbit per 4 s so a GIF loops.
+  if (new URLSearchParams(window.location.search).has('__snapshot')) {
+    controls.enableDamping = false;
+    controls.autoRotateSpeed = 7.5; // 30 / 7.5 = 4 s per full rotation
+  }
+
   const dracoLoader = new DRACOLoader();
   dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
 
