@@ -537,109 +537,192 @@ exports.getInvoice = async (req, res, next) => {
 
     const invoiceName = 'invoice-' + orderId + '.pdf';
     const invoicePath = path.join('invoices', invoiceName);
-
     fs.mkdirSync('invoices', { recursive: true });
 
-    const pdfDoc = new PDFDocument({ margin: 50 });
+    const pdfDoc = new PDFDocument({
+      size: 'LETTER',
+      margins: { top: 56, bottom: 56, left: 56, right: 56 },
+      info: {
+        Title: 'Invoice — Noblecart',
+        Author: 'Noblecart',
+        Creator: 'Noblecart',
+      },
+    });
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'inline; filename="' + invoiceName + '"');
     pdfDoc.pipe(fs.createWriteStream(invoicePath));
     pdfDoc.pipe(res);
 
-    const pageWidth = pdfDoc.page.width;
-    const margin = 50;
-    const contentRight = pageWidth - margin;
-    const contentWidth = pageWidth - margin * 2;
-    const invoiceDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    const shortOrderId = '#' + orderId.toString().slice(-8).toUpperCase();
+    // Brand fonts — registered as semantic aliases
+    const fontDir = path.join(__dirname, '..', 'public', 'fonts');
+    pdfDoc.registerFont('serif',        path.join(fontDir, 'CormorantGaramond-Regular.ttf'));
+    pdfDoc.registerFont('serif-bold',   path.join(fontDir, 'CormorantGaramond-Bold.ttf'));
+    pdfDoc.registerFont('serif-italic', path.join(fontDir, 'CormorantGaramond-Italic.ttf'));
+    pdfDoc.registerFont('sans',         path.join(fontDir, 'Montserrat-Regular.ttf'));
+    pdfDoc.registerFont('sans-medium',  path.join(fontDir, 'Montserrat-Medium.ttf'));
+    pdfDoc.registerFont('sans-bold',    path.join(fontDir, 'Montserrat-Bold.ttf'));
+    pdfDoc.registerFont('mono',         path.join(fontDir, 'JetBrainsMono-Regular.ttf'));
+    pdfDoc.registerFont('mono-medium',  path.join(fontDir, 'JetBrainsMono-Medium.ttf'));
 
-    // === HEADER ===
-    pdfDoc.rect(0, 0, pageWidth, 100).fill('#0c0a09');
-    pdfDoc.fillColor('#ffffff').fontSize(30).font('Helvetica-Bold').text('INVOICE', margin, 30);
-    pdfDoc.fillColor('#ffffff').fontSize(11).font('Helvetica-Bold')
-      .text('NOBLECART_', 0, 32, { align: 'right', width: contentRight });
-    pdfDoc.fillColor('rgba(255,255,255,0.45)').fontSize(8).font('Helvetica')
-      .text(invoiceDate, 0, 50, { align: 'right', width: contentRight });
+    // Editorial palette — warm paper, near-ink, saffron accent
+    const INK    = '#1a1612';
+    const PAPER  = '#fbf8f3';
+    const AMBER  = '#b8730e';
+    const MUTED  = '#8a7d6d';
+    const HAIR   = '#d9cfc0';
 
-    // Subtle separator below header
-    pdfDoc.rect(0, 100, pageWidth, 1).fill('#2a2a2a');
+    const pageW = pdfDoc.page.width;
+    const pageH = pdfDoc.page.height;
+    const ML = 56;
+    const MR = pageW - 56;
+    const W  = MR - ML;
 
-    // === META: ORDER + BILLED TO side by side ===
-    const metaY = 124;
-    const col2X = margin + contentWidth * 0.5;
+    // Warm-paper wash
+    pdfDoc.rect(0, 0, pageW, pageH).fill(PAPER);
 
-    pdfDoc.fillColor('#94a3b8').fontSize(7).font('Helvetica-Bold')
-      .text('ORDER', margin, metaY, { characterSpacing: 1.5 });
-    pdfDoc.fillColor('#0c0a09').fontSize(14).font('Helvetica-Bold')
-      .text(shortOrderId, margin, metaY + 11);
+    // ─── EDITORIAL TOP STRIP ───────────────────────────────
+    const issueId = orderId.toString().slice(-6).toUpperCase();
+    const longId  = '#' + orderId.toString().slice(-8).toUpperCase();
+    const dateStr = new Date().toLocaleDateString('en-GB', {
+      year: 'numeric', month: 'long', day: '2-digit',
+    }).toUpperCase();
 
-    pdfDoc.fillColor('#94a3b8').fontSize(7).font('Helvetica-Bold')
-      .text('BILLED TO', col2X, metaY, { characterSpacing: 1.5 });
-    pdfDoc.fillColor('#0c0a09').fontSize(10).font('Helvetica')
-      .text(order.user.email, col2X, metaY + 13);
+    pdfDoc.font('mono').fontSize(7).fillColor(MUTED)
+      .text('NOBLECART  /  ISSUE N° ' + issueId, ML, 56, { characterSpacing: 0.8 });
+    pdfDoc.font('mono').fontSize(7).fillColor(MUTED)
+      .text(dateStr, ML, 56, { width: W, align: 'right', characterSpacing: 0.8 });
 
-    // Divider
-    const dividerY = metaY + 46;
-    pdfDoc.moveTo(margin, dividerY).lineTo(contentRight, dividerY)
-      .strokeColor('#e2e8f0').lineWidth(1).stroke();
+    // Hairline + amber tick
+    pdfDoc.moveTo(ML, 76).lineTo(MR, 76)
+      .strokeColor(HAIR).lineWidth(0.5).stroke();
+    pdfDoc.rect(ML, 74, 6, 4).fill(AMBER);
 
-    // === TABLE HEADER ===
-    const tableY = dividerY + 12;
-    const ROW_H = 36;
-    const COL_QTY = margin + Math.round(contentWidth * 0.58);
-    const COL_PRICE = margin + Math.round(contentWidth * 0.71);
-    const COL_TOTAL = margin + Math.round(contentWidth * 0.85);
+    // ─── DECORATIVE N MARK ────────────────────────────────
+    pdfDoc.font('serif-italic').fontSize(20).fillColor(INK)
+      .text('N', ML, 96, { lineBreak: false });
+    pdfDoc.circle(ML + 16, 102, 1.4).fill(AMBER);
 
-    pdfDoc.rect(margin, tableY, contentWidth, 24).fill('#f8fafc');
-    pdfDoc.fillColor('#94a3b8').fontSize(7.5).font('Helvetica-Bold')
-      .text('ITEM', margin + 10, tableY + 9, { characterSpacing: 1 })
-      .text('QTY', COL_QTY, tableY + 9, { width: 40, align: 'center', characterSpacing: 1 })
-      .text('UNIT PRICE', COL_PRICE, tableY + 9, { width: 70, align: 'right', characterSpacing: 1 })
-      .text('TOTAL', COL_TOTAL, tableY + 9, { width: contentRight - COL_TOTAL, align: 'right', characterSpacing: 1 });
+    // ─── HERO MASTHEAD ─────────────────────────────────────
+    // Giant italic serif — the single most memorable element
+    pdfDoc.font('serif-italic').fontSize(96).fillColor(INK)
+      .text('Invoice.', ML - 4, 124, { lineBreak: false });
 
-    // === PRODUCT ROWS ===
-    let y = tableY + 24;
-    let totalPrice = 0;
+    // Italic recipient line — feels like a magazine dedication
+    pdfDoc.font('serif-italic').fontSize(15).fillColor(MUTED)
+      .text('for ' + order.user.email, ML, 234, { width: W * 0.7 });
+
+    // ─── EDITORIAL META BAR ────────────────────────────────
+    // Three vertical columns: ORDER / DATE / STATUS — magazine-mast style
+    const metaY = 280;
+    pdfDoc.moveTo(ML, metaY).lineTo(MR, metaY)
+      .strokeColor(INK).lineWidth(0.6).stroke();
+
+    const metaRow = metaY + 14;
+    const colW = W / 3;
+    const status = order.status
+      ? order.status.charAt(0).toUpperCase() + order.status.slice(1).replace(/_/g, ' ')
+      : 'Confirmed';
+
+    const drawMeta = (label, value, x, font = 'mono-medium', size = 11) => {
+      pdfDoc.font('mono').fontSize(6.5).fillColor(MUTED)
+        .text(label, x, metaRow, { characterSpacing: 1.4 });
+      pdfDoc.font(font).fontSize(size).fillColor(INK)
+        .text(value, x, metaRow + 12, { width: colW - 12, lineBreak: false, ellipsis: true });
+    };
+    drawMeta('ORDER',  longId,  ML);
+    drawMeta('DATE',   dateStr, ML + colW);
+    drawMeta('STATUS', status,  ML + colW * 2, 'serif-italic', 14);
+
+    // ─── SECTION DIVIDER WITH AMBER MARK ──────────────────
+    const divY = metaY + 60;
+    pdfDoc.moveTo(ML, divY).lineTo(ML + W * 0.18, divY)
+      .strokeColor(INK).lineWidth(0.6).stroke();
+    pdfDoc.rect(ML + W * 0.18 + 6, divY - 2, 10, 4).fill(AMBER);
+    pdfDoc.moveTo(ML + W * 0.18 + 22, divY).lineTo(MR, divY)
+      .strokeColor(HAIR).lineWidth(0.4).stroke();
+
+    pdfDoc.font('mono').fontSize(7).fillColor(MUTED)
+      .text('THE GOODS', ML, divY + 12, { characterSpacing: 1.6 });
+
+    // ─── EDITORIAL ITEM LIST (no table) ───────────────────
+    // Each entry: mono index / serif title / italic descriptor / mono total
+    let listY = divY + 38;
+    const ROW_H = 44;
+    let subtotal = 0;
 
     order.products.forEach((prod, i) => {
       const lineTotal = prod.quantity * prod.productData.price;
-      totalPrice += lineTotal;
+      subtotal += lineTotal;
+      const idx = String(i + 1).padStart(2, '0');
 
-      if (i % 2 === 1) {
-        pdfDoc.rect(margin, y, contentWidth, ROW_H).fill('#fafafa');
-      }
+      pdfDoc.font('mono').fontSize(8).fillColor(MUTED)
+        .text(idx, ML, listY + 4, { characterSpacing: 1 });
 
-      const textY = y + ROW_H / 2 - 5;
-      pdfDoc.fillColor('#334155').fontSize(10).font('Helvetica')
-        .text(prod.productData.title, margin + 10, textY, { width: COL_QTY - margin - 16 })
-        .text(String(prod.quantity), COL_QTY, textY, { width: 40, align: 'center' })
-        .text('$' + prod.productData.price.toFixed(2), COL_PRICE, textY, { width: 70, align: 'right' });
-      pdfDoc.fillColor('#0c0a09').font('Helvetica-Bold')
-        .text('$' + lineTotal.toFixed(2), COL_TOTAL, textY, { width: contentRight - COL_TOTAL, align: 'right' });
+      pdfDoc.font('serif-bold').fontSize(17).fillColor(INK)
+        .text(prod.productData.title, ML + 32, listY - 2, {
+          width: W * 0.6, lineBreak: false, ellipsis: true,
+        });
 
-      y += ROW_H;
-      pdfDoc.moveTo(margin, y).lineTo(contentRight, y)
-        .strokeColor('#f1f5f9').lineWidth(0.5).stroke();
+      pdfDoc.font('serif-italic').fontSize(11).fillColor(MUTED)
+        .text(
+          prod.quantity + ' × $' + prod.productData.price.toFixed(2),
+          ML + 32, listY + 20,
+        );
+
+      pdfDoc.font('mono-medium').fontSize(13).fillColor(INK)
+        .text('$' + lineTotal.toFixed(2), ML, listY + 4, {
+          width: W, align: 'right',
+        });
+
+      const underY = listY + ROW_H - 6;
+      pdfDoc.moveTo(ML + 32, underY).lineTo(MR, underY)
+        .strokeColor(HAIR).lineWidth(0.3).stroke();
+
+      listY += ROW_H;
     });
 
-    // === TOTAL ROW ===
-    const totalRowY = y + 14;
-    pdfDoc.moveTo(margin, totalRowY).lineTo(contentRight, totalRowY)
-      .strokeColor('#0c0a09').lineWidth(1.5).stroke();
-    pdfDoc.fillColor('#64748b').fontSize(8).font('Helvetica')
-      .text('TOTAL DUE', COL_PRICE, totalRowY + 10, { width: 70, align: 'right', characterSpacing: 0.8 });
-    pdfDoc.fillColor('#0c0a09').fontSize(15).font('Helvetica-Bold')
-      .text('$' + totalPrice.toFixed(2), COL_TOTAL, totalRowY + 7, { width: contentRight - COL_TOTAL, align: 'right' });
+    // ─── TOTALS BLOCK (right-aligned, editorial pull-quote) ─
+    const totY = listY + 18;
+    pdfDoc.font('mono').fontSize(7).fillColor(MUTED)
+      .text('SUBTOTAL', ML, totY, { width: W - 90, align: 'right', characterSpacing: 1.4 });
+    pdfDoc.font('mono').fontSize(10).fillColor(INK)
+      .text('$' + subtotal.toFixed(2), ML, totY - 1, { width: W, align: 'right' });
 
-    // === FOOTER ===
-    const footerY = totalRowY + 62;
-    pdfDoc.moveTo(margin, footerY).lineTo(contentRight, footerY)
-      .strokeColor('#e2e8f0').lineWidth(0.5).stroke();
-    pdfDoc.fillColor('#cbd5e1').fontSize(7.5).font('Helvetica')
-      .text('Thank you for your purchase — Noblecart_', margin, footerY + 10, {
-        align: 'center',
-        width: contentWidth,
+    pdfDoc.font('mono').fontSize(7).fillColor(MUTED)
+      .text('SHIPPING', ML, totY + 16, { width: W - 90, align: 'right', characterSpacing: 1.4 });
+    pdfDoc.font('serif-italic').fontSize(11).fillColor(INK)
+      .text('Complimentary', ML, totY + 12, { width: W, align: 'right' });
+
+    // Amber rule above the big number
+    pdfDoc.moveTo(MR - 180, totY + 44).lineTo(MR, totY + 44)
+      .strokeColor(AMBER).lineWidth(0.9).stroke();
+
+    pdfDoc.font('serif-italic').fontSize(12).fillColor(MUTED)
+      .text('Total,', ML, totY + 52, { width: W, align: 'right' });
+
+    pdfDoc.font('serif-italic').fontSize(56).fillColor(INK)
+      .text('$' + subtotal.toFixed(2), ML, totY + 64, {
+        width: W, align: 'right', lineBreak: false,
       });
+
+    // ─── COLOPHON FOOTER ──────────────────────────────────
+    // Stays within the bottom margin to avoid PDFKit auto-pagination
+    const footY = pageH - 86;
+    pdfDoc.moveTo(ML, footY).lineTo(MR, footY)
+      .strokeColor(HAIR).lineWidth(0.4).stroke();
+
+    pdfDoc.font('serif-italic').fontSize(9).fillColor(MUTED)
+      .text('Set in Cormorant Garamond — composed for one reader.',
+            ML, footY + 10, { width: W * 0.55, lineBreak: false });
+
+    pdfDoc.font('mono').fontSize(7).fillColor(MUTED)
+      .text('THANK YOU  /  NOBLECART',
+            ML + W * 0.55, footY + 12,
+            { width: W * 0.27, align: 'center', characterSpacing: 1.6, lineBreak: false });
+
+    pdfDoc.font('mono').fontSize(7).fillColor(MUTED)
+      .text('01 / 01', ML, footY + 12,
+            { width: W, align: 'right', characterSpacing: 1.6, lineBreak: false });
 
     pdfDoc.end();
   } catch (err) {
